@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayar — ZOLA XITERS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --red: #e8001e;
+            --bg: #050508;
+            --bg1: #0a090d;
+            --bg2: #110f15;
+            --bg3: #191520;
+            --border: rgba(232,0,30,0.2);
+            --border-dim: rgba(255,255,255,0.07);
+            --text: #d9d6e0;
+            --text-dim: #7a7585;
+            --text-strong: #f0edf5;
+            --font-main: 'Barlow', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-display: 'Bebas Neue', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px 40px;
+        }
+
+        /* ---- TOPBAR ---- */
+        .topbar {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            margin-bottom: 8px;
+        }
+
+        .back-link {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color .15s;
+        }
+        .back-link:hover { color: #fff; }
+
+        .brand {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: var(--red);
+            letter-spacing: 1px;
+        }
+
+        /* ---- STEP INDICATOR ---- */
+        .steps {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 24px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .step-num {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--bg2);
+            border: 1.5px solid var(--border-dim);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 700;
+            transition: all .3s;
+        }
+
+        .step-num.done {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff;
+        }
+
+        .step-num.active {
+            background: rgba(232,0,30,0.15);
+            border-color: var(--red);
+            color: var(--red);
+            box-shadow: 0 0 12px rgba(232,0,30,0.3);
+        }
+
+        .step-label {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .step.active .step-label { color: var(--red); }
+
+        .step-line {
+            flex: 1;
+            height: 1.5px;
+            background: var(--border-dim);
+            min-width: 36px;
+            margin: 0 6px;
+            margin-bottom: 18px;
+        }
+
+        .step-line.done { background: var(--red); }
+
+        /* ---- CARD ---- */
+        .card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg1);
+            border: 1px solid var(--border-dim);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border-dim);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: rgba(232,0,30,0.1);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            color: var(--red);
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            margin-top: 2px;
+        }
+
+        .card-body { padding: 24px; }
+
+        /* ---- STEP 1: PILIH PAKET ---- */
+        #step1 .paket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .paket-opt {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .paket-opt input { display: none; }
+
+        .paket-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border-dim);
+            border-radius: 10px;
+            transition: border-color .15s, background .15s;
+        }
+
+        .paket-opt input:checked + .paket-box {
+            border-color: var(--red);
+            background: rgba(232,0,30,0.06);
+        }
+
+        .paket-box-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .paket-box-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: var(--bg3);
+            border: 1px solid var(--border-dim);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--red);
+        }
+
+        .paket-box-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-strong);
+            line-height: 1.2;
+        }
+
+        .paket-box-type {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        .paket-box-price {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--red);
+            letter-spacing: 0.5px;
+        }
+
+        .paket-opt .hot-tag {
+            position: absolute;
+            top: -8px; left: 12px;
+            background: var(--red);
+            color: #fff;
+            font-size: 9px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        .paket-opt .vip-tag {
+            position: absolute;
+            top: -8px; left: 12px;
+            background: linear-gradient(90deg, #8c6800, #c9a400);
+            color: #000;
+            font-size: 9px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        /* ---- FIELD ---- */
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .field input, .field select {
+            width: 100%;
+            background: var(--bg2);
+            border: 1.5px solid var(--border-dim);
+            border-radius: 8px;
+            color: var(--text-strong);
+            padding: 11px 14px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .15s;
+            font-family: var(--font-main);
+        }
+        .field input:focus, .field select:focus { border-color: var(--red); }
+        .field select option { background: var(--bg2); }
+
+        /* UV Addon */
+        .addon-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border-dim);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color .15s;
+            margin-bottom: 14px;
+        }
+        .addon-check-row:has(input:checked) { border-color: var(--red); background: rgba(232,0,30,0.05); }
+        .addon-check-row input { display: none; }
+
+        .check-box {
+            width: 18px; height: 18px;
+            border-radius: 5px;
+            border: 1.5px solid var(--border-dim);
+            background: var(--bg3);
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 700;
+        }
+        .addon-check-row:has(input:checked) .check-box {
+            background: var(--red);
+            border-color: var(--red);
+        }
+        .addon-check-row:has(input:checked) .check-box::after { content: '✓'; }
+
+        .addon-label { flex: 1; font-size: 13px; color: var(--text); }
+        .addon-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        /* ---- BTN ---- */
+        .btn-next {
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 9px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: opacity .15s, transform .1s;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px;
+            font-family: var(--font-main);
+        }
+        .btn-next:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-next:disabled { opacity: 0.35; transform: none; cursor: not-allowed; }
+
+        /* ---- STEP 2: QRIS PAYMENT ---- */
+        #step2 { display: none; }
+
+        .order-summary {
+            background: var(--bg2);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .order-summary-left { font-size: 13px; color: var(--text-dim); }
+        .order-summary-left strong { display: block; font-size: 14px; color: var(--text-strong); margin-bottom: 2px; }
+
+        .order-total {
+            font-family: var(--font-display);
+            font-size: 26px;
+            color: var(--red);
+            letter-spacing: 1px;
+        }
+
+        .qris-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .qris-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .qris-img-container {
+            position: relative;
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            border: 3px solid var(--red);
+            box-shadow: 0 0 30px rgba(232,0,30,0.2);
+        }
+
+        .qris-img-container img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .qris-badge {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 3px 14px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--red);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .qris-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .qris-merchant {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .qris-apps {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .qris-app-tag {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            background: var(--bg2);
+            border: 1px solid var(--border-dim);
+            border-radius: 5px;
+            padding: 3px 9px;
+        }
+
+        /* Countdown */
+        .countdown-wrap {
+            background: var(--bg2);
+            border: 1px solid var(--border-dim);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .countdown-left {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .countdown-timer {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: 2px;
+        }
+
+        .countdown-timer.urgent { color: #ff6b00; animation: pulse-timer .5s ease infinite; }
+        @keyframes pulse-timer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Steps guide */
+        .pay-guide {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .guide-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: rgba(232,0,30,0.1);
+            border: 1px solid rgba(232,0,30,0.3);
+            color: var(--red);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ---- STEP 3: KONFIRMASI ---- */
+        #step3 { display: none; }
+
+        .confirm-note {
+            background: rgba(232,0,30,0.06);
+            border: 1px solid rgba(232,0,30,0.2);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .confirm-note strong { color: var(--text-strong); }
+
+        .btn-wa {
+            width: 100%;
+            background: #25D366;
+            color: #fff;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px;
+            transition: opacity .15s;
+            font-family: var(--font-main);
+            text-decoration: none;
+        }
+        .btn-wa:hover { opacity: 0.88; }
+
+        .btn-back {
+            width: 100%;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border-dim);
+            font-size: 13px;
+            padding: 11px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all .15s;
+            font-family: var(--font-main);
+        }
+        .btn-back:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+        /* ---- FOOTER ---- */
+        .pay-footer {
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        @media (max-width: 400px) {
+            .qris-img-container img { width: 180px; height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Kembali ke toko</span>
+        </a>
+        <div class="brand">ZOLA XITERS</div>
+    </div>
+
+    <!-- STEP INDICATOR -->
+    <div class="steps" style="width:100%;max-width:480px;margin-bottom:20px;">
+        <div class="step" id="si1">
+            <div class="step-num active" id="sn1">1</div>
+            <div class="step-label">Pilih Paket</div>
+        </div>
+        <div class="step-line" id="sl1"></div>
+        <div class="step" id="si2">
+            <div class="step-num" id="sn2">2</div>
+            <div class="step-label">Bayar QRIS</div>
+        </div>
+        <div class="step-line" id="sl2"></div>
+        <div class="step" id="si3">
+            <div class="step-num" id="sn3">3</div>
+            <div class="step-label">Konfirmasi</div>
+        </div>
+    </div>
+
+    <!-- ===== STEP 1: PILIH PAKET ===== -->
+    <div class="card" id="step1">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <i class="fa-solid fa-bag-shopping"></i>
+            </div>
+            <div>
+                <div class="card-title">PILIH PAKET</div>
+                <div class="card-sub">Remote Panel Free Fire</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="paket-list">
+                <label class="paket-opt">
+                    <input type="radio" name="paket" value="Remote Panel Cosmic" data-price="10000" data-label="10K / Hari">
+                    <div class="paket-box">
+                        <div class="paket-box-left">
+                            <div class="paket-box-icon"><i class="fa-solid fa-bolt"></i></div>
+                            <div>
+                                <div class="paket-box-name">Remote Panel Cosmic</div>
+                                <div class="paket-box-type">Per Hari</div>
+                            </div>
+                        </div>
+                        <div class="paket-box-price">10K/hr</div>
+                    </div>
+                </label>
+
+                <label class="paket-opt">
+                    <div class="hot-tag">TERLARIS</div>
+                    <input type="radio" name="paket" value="Hide Remote Panel" data-price="600000" data-label="600K Lifetime">
+                    <div class="paket-box">
+                        <div class="paket-box-left">
+                            <div class="paket-box-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                            <div>
+                                <div class="paket-box-name">Hide Remote Panel</div>
+                                <div class="paket-box-type">Lifetime / 30 Hari</div>
+                            </div>
+                        </div>
+                        <div class="paket-box-price">600K</div>
+                    </div>
+                </label>
+
+                <label class="paket-opt">
+                    <div class="vip-tag">ULTIMATE</div>
+                    <input type="radio" name="paket" value="HideX Remote Panel" data-price="1300000" data-label="1.3JT Lifetime">
+                    <div class="paket-box">
+                        <div class="paket-box-left">
+                            <div class="paket-box-icon" style="color:#d4a800"><i class="fa-solid fa-crown"></i></div>
+                            <div>
+                                <div class="paket-box-name">HideX Remote Panel</div>
+                                <div class="paket-box-type">Lifetime VIP</div>
+                            </div>
+                        </div>
+                        <div class="paket-box-price" style="color:#d4a800">1.3JT</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Durasi (khusus Cosmic) -->
+            <div class="field" id="durasiField" style="display:none">
+                <label>Durasi Sewa (Hari)</label>
+                <input type="number" id="durasiInput" min="1" max="30" value="1" placeholder="Contoh: 3">
+            </div>
+
+            <!-- UV Addon -->
+            <label class="addon-check-row">
+                <input type="checkbox" id="addUv">
+                <div class="check-box"></div>
+                <div class="addon-label">Pemasangan via UV FAST RESS</div>
+                <div class="addon-badge">+5K</div>
+            </label>
+
+            <div class="field">
+                <label>Nama / Username FF</label>
+                <input type="text" id="customerName" placeholder="Nama lo / nick Free Fire" required>
+            </div>
+
+            <div class="field">
+                <label>Platform</label>
+                <select id="customerPlatform">
+                    <option>Windows 10 + Bluestacks 5</option>
+                    <option>Windows 10 + LDPlayer 9</option>
+                    <option>Windows 11 + Bluestacks 5</option>
+                    <option>Windows 11 + LDPlayer 9</option>
+                    <option>MSI / Emulator Lain</option>
+                </select>
+            </div>
+
+            <button class="btn-next" id="btnToPayment" disabled>
+                <i class="fa-solid fa-qrcode"></i>
+                Lanjut ke Pembayaran
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== STEP 2: BAYAR QRIS ===== -->
+    <div class="card" id="step2">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div>
+                <div class="card-title">SCAN QRIS</div>
+                <div class="card-sub">GoPay / OVO / Dana / M-Banking</div>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="order-summary-left">
+                    <strong id="summaryPaket">—</strong>
+                    <span id="summaryDetail">—</span>
+                </div>
+                <div class="order-total" id="summaryTotal">Rp 0</div>
+            </div>
+
+            <!-- Countdown -->
+            <div class="countdown-wrap">
+                <div class="countdown-left">
+                    <i class="fa-regular fa-clock"></i>
+                    Bayar sebelum habis
+                </div>
+                <div class="countdown-timer" id="countdown">15:00</div>
+            </div>
+
+            <!-- Panduan -->
+            <div class="pay-guide">
+                <div class="guide-step">
+                    <div class="guide-num">1</div>
+                    Buka aplikasi dompet digital / m-banking lo
+                </div>
+                <div class="guide-step">
+                    <div class="guide-num">2</div>
+                    Pilih <strong style="color:#fff">Bayar / Scan QR</strong> lalu scan kode di bawah
+                </div>
+                <div class="guide-step">
+                    <div class="guide-num">3</div>
+                    Pastikan nominal <strong style="color:#fff" id="guideNominal">Rp 0</strong> sesuai, lalu bayar
+                </div>
+                <div class="guide-step">
+                    <div class="guide-num">4</div>
+                    Klik tombol <strong style="color:#fff">Sudah Bayar</strong> untuk konfirmasi ke admin
+                </div>
+            </div>
+
+            <!-- QRIS Code -->
+            <div class="qris-wrap">
+                <div class="qris-label">Scan QR di bawah ini</div>
+                <div class="qris-img-container">
+                    <img src="qris.jpg" alt="QRIS ZOLA XITERS — Toko Kelontong Zayd">
+                    <div class="qris-badge">QRIS — GPN</div>
+                </div>
+                <div class="qris-info">
+                    <div class="qris-merchant">ZOLA XITERS</div>
+                    <div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono)">a/n Toko Kelontong Zayd</div>
+                    <div class="qris-apps">
+                        <span class="qris-app-tag">GoPay</span>
+                        <span class="qris-app-tag">OVO</span>
+                        <span class="qris-app-tag">DANA</span>
+                        <span class="qris-app-tag">ShopeePay</span>
+                        <span class="qris-app-tag">M-Banking</span>
+                        <span class="qris-app-tag">LinkAja</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-next" id="btnSudahBayar">
+                <i class="fa-solid fa-check-circle"></i>
+                Sudah Bayar — Konfirmasi ke Admin
+            </button>
+
+            <button class="btn-back" id="btnBackToStep1">
+                <i class="fa-solid fa-arrow-left"></i> Ganti Paket
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== STEP 3: KONFIRMASI ===== -->
+    <div class="card" id="step3">
+        <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);color:#25D366">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+                <div class="card-title">KONFIRMASI</div>
+                <div class="card-sub">Kirim bukti bayar ke admin WA</div>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <div class="confirm-note">
+                Pembayaran lo <strong>belum otomatis terverifikasi</strong> karena ini QRIS statis.<br><br>
+                Langkah selanjutnya: <strong>kirim bukti transfer</strong> (screenshot) ke WhatsApp admin. Key akan diproses <strong>maks 5 menit</strong> setelah konfirmasi.
+            </div>
+
+            <div class="order-summary" style="margin-bottom:16px">
+                <div class="order-summary-left">
+                    <strong id="confirmPaket">—</strong>
+                    <span id="confirmDetail">—</span>
+                </div>
+                <div class="order-total" id="confirmTotal">Rp 0</div>
+            </div>
+
+            <a class="btn-wa" id="btnWaConfirm" href="#" target="_blank">
+                <i class="fa-brands fa-whatsapp"></i>
+                Kirim Bukti Bayar ke Admin
+            </a>
+
+            <button class="btn-back" id="btnBackToStep2" style="margin-top:10px">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </button>
+        </div>
+    </div>
+
+    <div class="pay-footer">
+        © 2026 ZOLA XITERS · Pembayaran diproses manual via QRIS statis
+    </div>
+
+<script>
+    const WA_NUMBER = '6289652611028';
+    let state = {
+        paket: null,
+        price: 0,
+        label: '',
+        durasi: 1,
+        addUv: false,
+        name: '',
+        platform: '',
+        totalPrice: 0,
+    };
+    let countdownInterval = null;
+
+    // ---- PAKET SELECTION ----
+    const radios = document.querySelectorAll('input[name="paket"]');
+    const durasiField = document.getElementById('durasiField');
+    const durasiInput = document.getElementById('durasiInput');
+    const addUvCb = document.getElementById('addUv');
+    const customerName = document.getElementById('customerName');
+    const btnToPayment = document.getElementById('btnToPayment');
+
+    radios.forEach(r => {
+        r.addEventListener('change', () => {
+            state.paket = r.value;
+            state.price = parseInt(r.dataset.price);
+            state.label = r.dataset.label;
+
+            const isCosmic = r.value === 'Remote Panel Cosmic';
+            durasiField.style.display = isCosmic ? 'block' : 'none';
+            calcTotal();
+            checkBtn();
+        });
+    });
+
+    durasiInput.addEventListener('input', () => { calcTotal(); });
+    addUvCb.addEventListener('change', calcTotal);
+    customerName.addEventListener('input', checkBtn);
+
+    function calcTotal() {
+        if (!state.paket) return;
+        const isCosmic = state.paket === 'Remote Panel Cosmic';
+        state.durasi = isCosmic ? (parseInt(durasiInput.value) || 1) : 1;
+        state.addUv = addUvCb.checked;
+
+        const base = isCosmic ? state.price * state.durasi : state.price;
+        state.totalPrice = base + (state.addUv ? 5000 : 0);
+    }
+
+    function checkBtn() {
+        btnToPayment.disabled = !state.paket || !customerName.value.trim();
+    }
+
+    function formatRp(n) {
+        return 'Rp ' + n.toLocaleString('id-ID');
+    }
+
+    // ---- STEP NAVIGATION ----
+    function goStep(n) {
+        document.getElementById('step1').style.display = n === 1 ? 'block' : 'none';
+        document.getElementById('step2').style.display = n === 2 ? 'block' : 'none';
+        document.getElementById('step3').style.display = n === 3 ? 'block' : 'none';
+
+        [1, 2, 3].forEach(i => {
+            const sn = document.getElementById('sn' + i);
+            sn.className = 'step-num';
+            if (i < n) sn.className += ' done';
+            else if (i === n) sn.className += ' active';
+        });
+
+        [1, 2].forEach(i => {
+            const sl = document.getElementById('sl' + i);
+            sl.className = 'step-line' + (i < n ? ' done' : '');
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ---- BTN TO PAYMENT ----
+    btnToPayment.addEventListener('click', () => {
+        calcTotal();
+        state.name = customerName.value.trim();
+        state.platform = document.getElementById('customerPlatform').value;
+
+        const isCosmic = state.paket === 'Remote Panel Cosmic';
+        const detailLabel = isCosmic
+            ? `${state.durasi} Hari${state.addUv ? ' + UV FAST RESS' : ''}`
+            : state.label + (state.addUv ? ' + UV FAST RESS' : '');
+
+        document.getElementById('summaryPaket').textContent = state.paket;
+        document.getElementById('summaryDetail').textContent = detailLabel;
+        document.getElementById('summaryTotal').textContent = formatRp(state.totalPrice);
+        document.getElementById('guideNominal').textContent = formatRp(state.totalPrice);
+
+        startCountdown(15 * 60);
+        goStep(2);
+    });
+
+    // ---- COUNTDOWN ----
+    function startCountdown(secs) {
+        clearInterval(countdownInterval);
+        let remaining = secs;
+        const el = document.getElementById('countdown');
+
+        function tick() {
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            el.className = 'countdown-timer' + (remaining <= 60 ? ' urgent' : '');
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                el.textContent = 'HABIS';
+            }
+            remaining--;
+        }
+
+        tick();
+        countdownInterval = setInterval(tick, 1000);
+    }
+
+    // ---- SUDAH BAYAR ----
+    document.getElementById('btnSudahBayar').addEventListener('click', () => {
+        clearInterval(countdownInterval);
+
+        const isCosmic = state.paket === 'Remote Panel Cosmic';
+        const detailLabel = isCosmic
+            ? `${state.durasi} Hari${state.addUv ? ' + UV FAST RESS' : ''}`
+            : state.label + (state.addUv ? ' + UV FAST RESS' : '');
+
+        document.getElementById('confirmPaket').textContent = state.paket;
+        document.getElementById('confirmDetail').textContent = detailLabel;
+        document.getElementById('confirmTotal').textContent = formatRp(state.totalPrice);
+
+        const msg = encodeURIComponent(
+            `Halo Admin ZOLA XITERS! 👋\n\n` +
+            `*Konfirmasi Pembayaran QRIS*\n\n` +
+            `Nama: ${state.name}\n` +
+            `Paket: ${state.paket}\n` +
+            `Detail: ${detailLabel}\n` +
+            `Total: ${formatRp(state.totalPrice)}\n` +
+            `Platform: ${state.platform}\n\n` +
+            `[Saya sudah bayar via QRIS — ini bukti transfernya 👆]\n\n` +
+            `Tolong diproses ya, makasih!`
+        );
+
+        document.getElementById('btnWaConfirm').href = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+        goStep(3);
+    });
+
+    // ---- BACK BUTTONS ----
+    document.getElementById('btnBackToStep1').addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        goStep(1);
+    });
+
+    document.getElementById('btnBackToStep2').addEventListener('click', () => {
+        startCountdown(15 * 60);
+        goStep(2);
+    });
+
+    // ---- INIT ----
+    goStep(1);
+</script>
+</body>
+</html>
